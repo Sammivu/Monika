@@ -9,7 +9,8 @@ import com.project.monika.model.dto.TransferResponse;
 import com.project.monika.model.dto.UserDTO;
 import com.project.monika.model.enums.Role;
 import com.project.monika.repository.UserRepository;
-import com.project.monika.service.impl.UserServiceImpl;
+import com.project.monika.service.impl.UserService;
+import com.project.monika.utils.Utils;
 import jakarta.persistence.EntityExistsException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +24,14 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class UserService implements UserServiceImpl {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private  ModelMapper modelmapper;
     private final IntegrationService thirdPartyIntegrated;
     private final ObjectMapper objectMapper;
+    private final Utils utils;
 
     @Override
     public UserDTO createUser(UserDTO userDTO) throws JsonProcessingException {
@@ -48,6 +50,7 @@ public class UserService implements UserServiceImpl {
         log.info("wallet response: {}", walletResponse);
         newUser.setWallet(objectMapper.writeValueAsString(walletResponse) );
         userRepository.save(newUser);
+        utils.welcomeEmail(newUser);
 
         return convertToDto(newUser);
     }
@@ -57,7 +60,8 @@ public class UserService implements UserServiceImpl {
         walletRequest.setLastName(savedUser.getLastName());
         walletRequest.setOtherNames(savedUser.getFirstName());
         walletRequest.setBvn("24416208831");
-        walletRequest.setNinUserId("abcdf-1235");
+        walletRequest.setNinUserId("abcdef-1235");
+        walletRequest.setDateOfBirth("29/04/1995");
         walletRequest.setTransactionTrackingRef("DGN2024112212010000");
         walletRequest.setNationalIdentityNo("22316109918");
         walletRequest.setNextOfKinName("John Doe");

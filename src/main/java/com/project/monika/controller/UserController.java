@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.project.monika.model.dto.TransferRequest;
 import com.project.monika.model.dto.TransferResponse;
 import com.project.monika.model.dto.UserDTO;
-import com.project.monika.service.impl.UserServiceImpl;
+import com.project.monika.service.impl.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class UserController {
 
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
     @PostMapping("/api/auth/create")
     public ResponseEntity<UserDTO>createUser(@RequestBody UserDTO userDTO) throws JsonProcessingException {
