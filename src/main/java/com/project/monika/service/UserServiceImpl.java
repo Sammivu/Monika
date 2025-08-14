@@ -3,10 +3,7 @@ package com.project.monika.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.monika.model.User;
-import com.project.monika.model.dto.OpenWalletRequest;
-import com.project.monika.model.dto.TransferRequest;
-import com.project.monika.model.dto.TransferResponse;
-import com.project.monika.model.dto.UserDTO;
+import com.project.monika.model.dto.*;
 import com.project.monika.model.enums.Role;
 import com.project.monika.repository.UserRepository;
 import com.project.monika.service.impl.UserService;
@@ -19,6 +16,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -28,7 +27,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private  ModelMapper modelmapper;
+    private final ModelMapper modelmapper;
     private final IntegrationService thirdPartyIntegrated;
     private final ObjectMapper objectMapper;
     private final Utils utils;
@@ -123,6 +122,18 @@ public class UserServiceImpl implements UserService {
                 .creditResponse(creditResponse)
                 .message("Transfer completed successfully")
                 .build();
+    }
+
+    @Override
+    public List<Object> getAllBanks(){
+        try{
+            List<Object>allBanks =thirdPartyIntegrated.getBanks();
+            log.info("Bank list gotten successfully");
+            return allBanks;
+        }catch (Exception e){
+            log.info("Bank list unsuccessful");
+           throw new RuntimeException("Failed to get banks: {}", e);
+        }
     }
 
     private UserDTO convertToDto(User user){

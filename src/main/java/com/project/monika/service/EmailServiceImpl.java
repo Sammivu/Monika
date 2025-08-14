@@ -59,7 +59,7 @@ public class EmailServiceImpl implements EmailService {
             helper.setFrom(mail.getFrom());
             helper.setTo(mail.getTo());
             helper.setSubject(mail.getSubject());
-            helper.setText(mail.getModel(), false);
+            helper.setText(mail.getModel(), true);
             javaMailSender.send(message);
             log.info("HTML email sent to {}", mail.getTo());
 

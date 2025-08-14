@@ -1,5 +1,6 @@
 package com.project.monika.service;
 
+import com.project.monika.model.dto.BankDto;
 import com.project.monika.model.dto.OpenWalletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -77,16 +77,23 @@ public class IntegrationService {
 
         HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
         log.info("Response :: {}", entity);
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
         log.info("Response :: {}", response);
 
-        if (response.getStatusCode().is2xxSuccessful()) {
-            log.info("Authentication successful");
-            return headers;
-        } else {
-            log.error("Authentication failed: {}", response.getBody());
-            throw new RuntimeException("Third-party authentication failed");
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            throw new RuntimeException("Authentication failed: " + response);
         }
+
+            String accessToken = (String) response.getBody().get("accessToken");
+            if (accessToken == null || accessToken.isEmpty()) {
+                throw new RuntimeException("No accessToken found in authentication response");
+            }
+
+            // Return headers with Bearer token
+            HttpHeaders authHeaders = new HttpHeaders();
+            authHeaders.setContentType(MediaType.APPLICATION_JSON);
+            authHeaders.setBearerAuth(accessToken);
+            return authHeaders;
     }
 
     public Object openWallet(OpenWalletRequest requestDto) {
@@ -151,6 +158,21 @@ public class IntegrationService {
             log.error("Credit API call failed", e);
             return null;
         }
+    }
+
+    public List<Object> getBanks() {
+        String url = baseUrl + "/api/v1/get_banks";
+
+        HttpEntity<Void> entity = new HttpEntity<>(authenticate());
+        ResponseEntity<Object[]> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                Object[].class
+        );
+
+        log.info("Get banks response: {}", response);
+        return Arrays.asList(Objects.requireNonNull(response.getBody()));
     }
 
 }
